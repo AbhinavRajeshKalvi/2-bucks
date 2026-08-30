@@ -189,7 +189,7 @@ export async function submitAadhaar(
     formData.get('aadhaarNumber') ?? ''
   ).replace(/\s/g, '');
 
-  // Extract files safely.
+  // Safely extract the front file.
   const frontValue =
     formData.get('front');
 
@@ -198,6 +198,7 @@ export async function submitAadhaar(
       ? frontValue
       : null;
 
+  // Safely extract the back file.
   const backValue =
     formData.get('back');
 
@@ -277,7 +278,7 @@ export async function submitAadhaar(
     }
   }
 
-  // Stop on validation errors.
+  // Stop when validation fails.
   if (
     Object.keys(fieldErrors)
       .length > 0
@@ -288,12 +289,19 @@ export async function submitAadhaar(
     };
   }
 
-  // At this point validation has established
-  // that front is a real File.
-  const validFront = front;
+  /*
+   * At this point the validation above guarantees
+   * that front exists and is a File.
+   *
+   * The explicit cast makes the type contract
+   * unambiguous for the production TypeScript
+   * build used by Render.
+   */
+  const validFront =
+    front as File;
 
   // ─────────────────────────────────────────
-  // UPLOAD DOCUMENTS
+  // UPLOAD AADHAAR
   // ─────────────────────────────────────────
 
   try {
@@ -304,17 +312,23 @@ export async function submitAadhaar(
         validFront
       );
 
-    const aadhaarBackPublicId =
-      back && back.size > 0
-        ? await saveUserFile(
-            draft.draftId,
-            'aadhaar-back',
-            back
-          )
-        : undefined;
+    let aadhaarBackPublicId:
+      string | undefined;
 
-    // Store only the required information
-    // in the temporary signup state.
+    if (
+      back &&
+      back.size > 0
+    ) {
+      aadhaarBackPublicId =
+        await saveUserFile(
+          draft.draftId,
+          'aadhaar-back',
+          back
+        );
+    }
+
+    // Store temporary KYC information.
+    // The real user is not created yet.
     await updateSignupDraft({
       aadhaarLast4:
         rawAadhaar.slice(-4),
@@ -374,7 +388,7 @@ export async function submitSelfie(
     };
   }
 
-  // Make sure phone verification was completed.
+  // Phone must be verified first.
   if (
     !draft.phoneVerifiedAt ||
     !draft.phone
@@ -386,7 +400,7 @@ export async function submitSelfie(
     };
   }
 
-  // Make sure Aadhaar submission was completed.
+  // Aadhaar must be submitted first.
   if (
     !draft.aadhaarSubmittedAt ||
     !draft.aadhaarFrontPublicId
@@ -398,6 +412,7 @@ export async function submitSelfie(
     };
   }
 
+  // Safely extract the selfie file.
   const photoValue =
     formData.get('photo');
 
@@ -406,6 +421,7 @@ export async function submitSelfie(
       ? photoValue
       : null;
 
+  // Validate selfie exists.
   if (
     !photo ||
     photo.size === 0
@@ -430,12 +446,24 @@ export async function submitSelfie(
     };
   }
 
+  /*
+   * The checks above guarantee that photo
+   * exists and is a valid File.
+   *
+   * Explicitly cast it so TypeScript cannot
+   * treat it as File | null during the
+   * Cloudinary upload.
+   */
+  const validPhoto =
+    photo as File;
+
   // ─────────────────────────────────────────
-  // CREATE USER
+  // COMPLETE SIGNUP
   // ─────────────────────────────────────────
 
   try {
-    // Check once more before creating the account.
+    // Check one final time that the email
+    // hasn't been registered by another account.
     const existingUser =
       await getUserByEmail(
         draft.email
@@ -449,16 +477,18 @@ export async function submitSelfie(
       };
     }
 
-    // Upload selfie first.
+    // Upload selfie to Cloudinary.
     const selfiePublicId =
       await saveUserFile(
         draft.draftId,
         'selfie',
-        photo
+        validPhoto
       );
 
-    // Create the real MongoDB user only
-    // after every signup/KYC step succeeded.
+    // ───────────────────────────────────────
+    // CREATE REAL USER
+    // ───────────────────────────────────────
+
     const user =
       await createUser({
         name: draft.name,
@@ -507,8 +537,7 @@ export async function submitSelfie(
       user.id
     );
 
-    // Remove temporary signup state
-    // after the account has been created.
+    // Remove temporary signup state.
     await deleteSignupDraft();
 
     return {
