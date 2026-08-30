@@ -4,12 +4,11 @@ export interface Product {
   id: string;
   name: string;
   description: string;
-  value: number; // in INR
+  value: number;
   imageUrl: string;
   category: Category;
-  totalSlots: number; // = value (since ₹2/entry, max entries = value/2... actually fixed as value)
-  filledSlots: number;
-  endsAt: string; // ISO string
+  totalSlots: number;
+  endsAt: string;
   isHot: boolean;
   brand: string;
 }
@@ -25,7 +24,6 @@ export const products: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=80',
     category: 'Phones',
     totalSlots: 79950,
-    filledSlots: 71200,
     endsAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
     isHot: true,
     brand: 'Apple',
@@ -38,7 +36,6 @@ export const products: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80',
     category: 'Laptops',
     totalSlots: 99950,
-    filledSlots: 54300,
     endsAt: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
     isHot: true,
     brand: 'Apple',
@@ -51,7 +48,6 @@ export const products: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
     category: 'Vehicles',
     totalSlots: 97500,
-    filledSlots: 12400,
     endsAt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
     isHot: false,
     brand: 'Royal Enfield',
@@ -64,7 +60,6 @@ export const products: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600&q=80',
     category: 'Gaming',
     totalSlots: 27495,
-    filledSlots: 26100,
     endsAt: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
     isHot: true,
     brand: 'Sony',
@@ -77,7 +72,6 @@ export const products: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829e1?w=600&q=80',
     category: 'Electronics',
     totalSlots: 74950,
-    filledSlots: 31200,
     endsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     isHot: false,
     brand: 'Samsung',
@@ -90,7 +84,6 @@ export const products: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600&q=80',
     category: 'Laptops',
     totalSlots: 114950,
-    filledSlots: 8900,
     endsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
     isHot: false,
     brand: 'Dell',
@@ -103,7 +96,6 @@ export const products: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=600&q=80',
     category: 'Appliances',
     totalSlots: 26450,
-    filledSlots: 19800,
     endsAt: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
     isHot: true,
     brand: 'Dyson',
@@ -116,7 +108,6 @@ export const products: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&q=80',
     category: 'Phones',
     totalSlots: 67499,
-    filledSlots: 41000,
     endsAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
     isHot: false,
     brand: 'Samsung',

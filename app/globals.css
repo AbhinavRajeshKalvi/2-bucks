@@ -17,23 +17,24 @@
   --color-foreground: var(--off-white);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
-html {
-  scroll-behavior: smooth;
-}
+  html {
+    scroll-behavior: smooth;
+  }
 
-body {
-  background: var(--navy);
-  color: var(--off-white);
-  font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
+  body {
+    background: var(--navy);
+    color: var(--off-white);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
 }
-
 /* Fill bar animation */
 @keyframes fillPulse {
   0%, 100% { opacity: 1; }
@@ -74,6 +75,8 @@ body {
 .ticker-wrap {
   overflow: hidden;
   white-space: nowrap;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
 }
 
 .ticker-content {

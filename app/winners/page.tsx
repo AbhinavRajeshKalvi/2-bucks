@@ -17,7 +17,7 @@ const avatarColors = ['#E8364F', '#F5C518', '#22C55E', '#3B82F6', '#8B5CF6', '#E
 
 export default function WinnersPage() {
   return (
-    <div style={{ paddingTop: '88px', minHeight: '100vh' }}>
+    <div style={{ paddingTop: '96px', minHeight: '100vh' }}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         {/* Header */}

@@ -2,7 +2,7 @@ import { Shield, Zap, Trophy, RotateCcw, Lock, Users } from 'lucide-react';
 
 export default function HowItWorksPage() {
   return (
-    <div style={{ paddingTop: '88px', minHeight: '100vh' }}>
+    <div style={{ paddingTop: '96px', minHeight: '100vh' }}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         {/* Header */}
