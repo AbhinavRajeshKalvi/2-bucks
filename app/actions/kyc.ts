@@ -64,10 +64,11 @@ export async function sendOtp(
     };
   }
 
-  const { code, cooldownActive } = issueOtp(
-    draft.draftId,
-    phone
-  );
+  const { code, cooldownActive } =
+    issueOtp(
+      draft.draftId,
+      phone
+    );
 
   return {
     success: true,
@@ -115,7 +116,8 @@ export async function verifyOtp(
       typeof result.reason,
       string
     > = {
-      no_otp: 'Request a code first.',
+      no_otp:
+        'Request a code first.',
       expired:
         'That code expired. Send a new one.',
       too_many_attempts:
@@ -126,7 +128,8 @@ export async function verifyOtp(
 
     return {
       success: false,
-      message: messages[result.reason],
+      message:
+        messages[result.reason],
     };
   }
 
@@ -151,7 +154,10 @@ export type SubmitAadhaarResult =
   | {
       success: false;
       message?: string;
-      fieldErrors?: Record<string, string[]>;
+      fieldErrors?: Record<
+        string,
+        string[]
+      >;
     };
 
 export async function submitAadhaar(
@@ -167,8 +173,11 @@ export async function submitAadhaar(
     };
   }
 
-  // Phone verification must be completed first.
-  if (!draft.phoneVerifiedAt || !draft.phone) {
+  // Phone verification must happen first.
+  if (
+    !draft.phoneVerifiedAt ||
+    !draft.phone
+  ) {
     return {
       success: false,
       message:
@@ -180,11 +189,22 @@ export async function submitAadhaar(
     formData.get('aadhaarNumber') ?? ''
   ).replace(/\s/g, '');
 
+  // Extract files safely.
+  const frontValue =
+    formData.get('front');
+
   const front =
-    formData.get('front') as File | null;
+    frontValue instanceof File
+      ? frontValue
+      : null;
+
+  const backValue =
+    formData.get('back');
 
   const back =
-    formData.get('back') as File | null;
+    backValue instanceof File
+      ? backValue
+      : null;
 
   const fieldErrors: Record<
     string,
@@ -195,7 +215,11 @@ export async function submitAadhaar(
   // VALIDATE AADHAAR NUMBER
   // ─────────────────────────────────────────
 
-  if (!AADHAAR_REGEX.test(rawAadhaar)) {
+  if (
+    !AADHAAR_REGEX.test(
+      rawAadhaar
+    )
+  ) {
     fieldErrors.aadhaarNumber = [
       'Enter a valid 12-digit Aadhaar number.',
     ];
@@ -205,7 +229,10 @@ export async function submitAadhaar(
   // VALIDATE FRONT
   // ─────────────────────────────────────────
 
-  if (!front || front.size === 0) {
+  if (
+    !front ||
+    front.size === 0
+  ) {
     fieldErrors.front = [
       'Please upload the front of your Aadhaar.',
     ];
@@ -230,7 +257,10 @@ export async function submitAadhaar(
   // VALIDATE BACK
   // ─────────────────────────────────────────
 
-  if (back && back.size > 0) {
+  if (
+    back &&
+    back.size > 0
+  ) {
     const err =
       validateUploadedFile(back);
 
@@ -247,15 +277,23 @@ export async function submitAadhaar(
     }
   }
 
-  if (Object.keys(fieldErrors).length > 0) {
+  // Stop on validation errors.
+  if (
+    Object.keys(fieldErrors)
+      .length > 0
+  ) {
     return {
       success: false,
       fieldErrors,
     };
   }
 
+  // At this point validation has established
+  // that front is a real File.
+  const validFront = front;
+
   // ─────────────────────────────────────────
-  // UPLOAD AADHAAR TO CLOUDINARY
+  // UPLOAD DOCUMENTS
   // ─────────────────────────────────────────
 
   try {
@@ -263,7 +301,7 @@ export async function submitAadhaar(
       await saveUserFile(
         draft.draftId,
         'aadhaar-front',
-        front
+        validFront
       );
 
     const aadhaarBackPublicId =
@@ -275,6 +313,8 @@ export async function submitAadhaar(
           )
         : undefined;
 
+    // Store only the required information
+    // in the temporary signup state.
     await updateSignupDraft({
       aadhaarLast4:
         rawAadhaar.slice(-4),
@@ -284,7 +324,11 @@ export async function submitAadhaar(
 
       aadhaarFrontPublicId,
 
-      aadhaarBackPublicId,
+      ...(aadhaarBackPublicId
+        ? {
+            aadhaarBackPublicId,
+          }
+        : {}),
     });
 
     return {
@@ -330,8 +374,11 @@ export async function submitSelfie(
     };
   }
 
-  // Phone verification must be completed first.
-  if (!draft.phoneVerifiedAt || !draft.phone) {
+  // Make sure phone verification was completed.
+  if (
+    !draft.phoneVerifiedAt ||
+    !draft.phone
+  ) {
     return {
       success: false,
       message:
@@ -339,7 +386,7 @@ export async function submitSelfie(
     };
   }
 
-  // Aadhaar must be submitted first.
+  // Make sure Aadhaar submission was completed.
   if (
     !draft.aadhaarSubmittedAt ||
     !draft.aadhaarFrontPublicId
@@ -351,10 +398,18 @@ export async function submitSelfie(
     };
   }
 
-  const photo =
-    formData.get('photo') as File | null;
+  const photoValue =
+    formData.get('photo');
 
-  if (!photo || photo.size === 0) {
+  const photo =
+    photoValue instanceof File
+      ? photoValue
+      : null;
+
+  if (
+    !photo ||
+    photo.size === 0
+  ) {
     return {
       success: false,
       message:
@@ -376,12 +431,15 @@ export async function submitSelfie(
   }
 
   // ─────────────────────────────────────────
-  // CHECK EMAIL BEFORE UPLOADING SELFIE
+  // CREATE USER
   // ─────────────────────────────────────────
 
   try {
+    // Check once more before creating the account.
     const existingUser =
-      await getUserByEmail(draft.email);
+      await getUserByEmail(
+        draft.email
+      );
 
     if (existingUser) {
       return {
@@ -391,10 +449,7 @@ export async function submitSelfie(
       };
     }
 
-    // ───────────────────────────────────────
-    // UPLOAD SELFIE TO CLOUDINARY
-    // ───────────────────────────────────────
-
+    // Upload selfie first.
     const selfiePublicId =
       await saveUserFile(
         draft.draftId,
@@ -402,14 +457,14 @@ export async function submitSelfie(
         photo
       );
 
-    // ───────────────────────────────────────
-    // CREATE THE REAL USER
-    // ───────────────────────────────────────
-
+    // Create the real MongoDB user only
+    // after every signup/KYC step succeeded.
     const user =
       await createUser({
         name: draft.name,
+
         email: draft.email,
+
         passwordHash:
           draft.passwordHash,
 
@@ -448,9 +503,12 @@ export async function submitSelfie(
     // CREATE PERMANENT SESSION
     // ───────────────────────────────────────
 
-    await createSession(user.id);
+    await createSession(
+      user.id
+    );
 
-    // Remove temporary signup cookie.
+    // Remove temporary signup state
+    // after the account has been created.
     await deleteSignupDraft();
 
     return {
